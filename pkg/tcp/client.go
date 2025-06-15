@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"net"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 type KokaqWireClient struct {
 	address string
 	timeout int
+	logger  *logrus.Logger
 }
 
 func NewKokaqWireClientFromHostPort(host string, port int, timeout int) *KokaqWireClient {
@@ -29,7 +32,7 @@ func NewKokaqWireClientFromAddress(address string, timeout int) *KokaqWireClient
 func (client *KokaqWireClient) SendToWire(request *KokaqWireRequest) (*KokaqWireResponse, error) {
 	conn, err := net.DialTimeout("tcp", client.address, time.Duration(client.timeout)*time.Second)
 	if err != nil {
-		fmt.Printf("Socket Error: %v\n", err)
+		client.logger.WithError(err).Error("Socket Error")
 		return nil, err
 	}
 	defer conn.Close()
@@ -42,17 +45,17 @@ func (client *KokaqWireClient) SendToWire(request *KokaqWireRequest) (*KokaqWire
 	err = request.WriteToStream(bufWriter)
 	bufWriter.Flush() // Ensure data is sent
 	if err != nil {
-		fmt.Printf("Error writing request: %v\n", err)
+		client.logger.WithError(err).Error("Error writing request")
 		return nil, err
 	}
 
-	fmt.Println("Request sent, awaiting response...")
+	client.logger.Info("Request sent, awaiting response...")
 
 	// Read the response from the stream
 	response := &KokaqWireResponse{}
 	err = response.ReadFromStream(bufReader)
 	if err != nil {
-		fmt.Printf("Error reading response: %v\n", err)
+		client.logger.WithError(err).Error("Error reading response")
 		return nil, err
 	}
 
