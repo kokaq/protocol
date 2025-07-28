@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package proto;
+
+import "proto/common.proto";
+
+option go_package = "github.com/kokaq/protocol/proto";
+
+message ShardGrain {
+    uint64 shard_id = 1;
+    string queue = 2;
+}
+message ShardItem {
+    map<uint32, string> namespaces = 1;
+    map<uint64, string> queues = 2;
+    uint64 last_checkin = 3;
+}
+
+message RegisterNodeRequest {
+    string grpc_address = 1;
+    repeated ShardItem shard = 2;
+}
+
+message RegisterNodeResponse {
+    bool accepted = 1;
+    StatusResponse status = 2;
+}
+
+message GetShardRequest {
+    uint32 namespace_id = 1;
+    uint32 queue_id = 2;
+    string namespace = 3;
+    string queue = 4;
+    bool create_if_not_found = 5;
+}
+
+message GetShardResponse {
+    string grpc_address = 1;
+    StatusResponse status = 2;
+    bool is_new = 3;
+    uint64 new_shard_id = 4;
+}
+
+message ListShardsRequest {
+
+}
+
+message ListShardsResponse {
+    repeated ShardItem shards = 1;
+    StatusResponse status = 2;
+}
+
+// Shard service: queue and configuration management
+service KokaqShardManager {
+    rpc RegisterNode(RegisterNodeRequest) returns (RegisterNodeResponse);
+    rpc UnregisterNode(RegisterNodeRequest) returns (RegisterNodeResponse);
+    rpc RequestShard(GetShardRequest) returns (GetShardResponse);
+    rpc GetShard(GetShardRequest) returns (GetShardResponse);
+    rpc DeleteShard(GetShardRequest) returns (StatusResponse);
+    rpc ListShards(ListShardsRequest) returns (ListShardsResponse);
+}

@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package proto;
+
+import "proto/common.proto";
+
+option go_package = "github.com/kokaq/protocol/proto";
+
+message GetDataplaneRequest {
+    string namespace = 1;
+    string queue = 2;
+}
+
+message GetDataplaneResponse {
+    string namespace = 1;
+    string queue = 2;
+    string address = 3;
+}
+
+// Control service: queue and configuration management
+service KokaqControlPlane {
+    rpc GetDataplane(GetDataplaneRequest) returns (GetDataplaneResponse);
+    rpc GetNamespace(KokaqNamespaceRequest) returns (KokaqNamespaceResponse);
+    rpc AddNamespace(KokaqNamespaceRequest) returns (KokaqNamespaceResponse);
+    rpc DeleteNamespace(KokaqNamespaceRequest) returns (StatusResponse);
+    rpc AddQueue(KokaqQueueRequest) returns (KokaqQueueResponse);
+    rpc GetQueue(KokaqQueueRequest) returns (KokaqQueueResponse);
+    rpc DeleteQueue(KokaqQueueRequest) returns (StatusResponse);
+    rpc ClearQueue(KokaqQueueRequest) returns (StatusResponse);
+    rpc GetStats(KokaqNamespaceRequest) returns (KokaqStatsResponse);
+}

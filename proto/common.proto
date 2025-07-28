@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package proto;
+option go_package = "github.com/kokaq/protocol/proto";
+
+import "google/protobuf/timestamp.proto";
+
+enum ErrorCode {
+  ERROR_NONE = 0;                    // No error
+  ERROR_NOT_FOUND = 1;              // Generic not found (queue, namespace, etc.)
+  ERROR_UNAUTHORIZED = 2;          // Access denied
+  ERROR_INTERNAL = 3;              // Internal server error
+  ERROR_QUEUE_DISABLED = 4;        // Queue exists but is disabled
+  ERROR_SHARD_UNHEALTHY = 5;       // Target shard unavailable or unhealthy
+  ERROR_TIMEOUT = 6;               // Request timed out
+  ERROR_INVALID_ARGUMENT = 7;      // Malformed or missing request data
+  ERROR_DEPENDENCY_FAILURE = 8;    // Downstream system (e.g., storage, network) failed
+}
+
+// Generic status response for any RPC call
+message StatusResponse {
+  bool success = 1;
+  ErrorCode error = 2;
+}
+
+enum FailureReason {
+  MESSAGE_FAILURE_UNSPECIFIED = 0;           // Default/unset
+  HANDLER_TIMEOUT = 1;                        // Handler exceeded execution time
+  MAX_RETRY_EXCEEDED = 2;                     // Retry count exceeded
+  INVALID_PAYLOAD = 3;                        // Message body or format is bad
+  PROCESSING_ERROR = 4;                       // Uncaught error during handler
+  EXPIRED = 5;                                 // TTL expired before processing
+  POISON_MESSAGE = 6;                          // Message caused repeated crashes
+  UNAUTHORIZED_HANDLER = 7;                   // Handler rejected due to auth
+  QUEUE_NOT_FOUND = 8;                         // Queue missing at processing time
+  DROPPED_DUE_TO_SHUTDOWN = 9;                 // Message lost during node shutdown
+  VISIBILITY_TIMEOUT_EXCEEDED = 10;           // Lock expired before ack or renew
+}
+
+message KokaqStatsResponse {
+    map<string, uint64> stats = 1;
+    StatusResponse status = 2;
+}
+
+message KokaqNamespaceRequest {
+  string namespace = 1;
+}
+
+message KokaqNamespaceResponse {
+  string namespace = 1;
+  uint64 total_queue_count = 2;
+  google.protobuf.Timestamp created_on = 3;
+}
+
+message KokaqQueueRequest {
+  string queue = 1;
+  string namespace = 2;
+  google.protobuf.Timestamp created_on = 3;
+  google.protobuf.Timestamp default_expiry = 4;
+  uint32 default_visibility_timeout = 5;
+  uint32 max_dequeue_count = 6;
+  uint64 max_priority = 7;
+  uint64 min_priority = 8;
+  bool enable_dead_letter = 9;
+}
+
+message KokaqQueueResponse {
+  KokaqQueueRequest request = 1;
+  uint64 shard_id = 2;
+  uint64 total_node_count = 3;
+  uint64 total_page_count = 4;
+  google.protobuf.Timestamp created_on = 5;
+}

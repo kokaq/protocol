@@ -1,0 +1,172 @@
+syntax = "proto3";
+
+package proto;
+
+import "proto/common.proto";
+
+option go_package = "github.com/kokaq/protocol/proto";
+import "google/protobuf/timestamp.proto";
+
+message KokaqMessageHeaders {
+  string content_type = 1;
+  string correlation_id = 2;
+  string source = 3;
+  FailureReason failure_reason = 4;
+}
+message KokaqMessageRequest {
+  string message_id = 1;
+  string namespace = 2;
+  string queue = 3;
+  uint64 priority = 4;
+  bytes payload = 5;
+  KokaqMessageHeaders headers = 6;
+}
+message KokaqMessageResponse {
+  KokaqMessageRequest message = 1;
+  google.protobuf.Timestamp created_on = 2;
+  google.protobuf.Timestamp last_dequeued = 3;
+  google.protobuf.Timestamp expiry = 4;
+  google.protobuf.Timestamp dead_lettered_at = 5;
+  uint32 visibility_timeout = 6;
+  uint32 retry_count = 7;
+}
+message EnqueueRequest {
+  KokaqMessageRequest message = 1;
+}
+message EnqueueResponse {
+  string message_id = 1;
+  google.protobuf.Timestamp enqueued_at = 2;
+}
+message DequeueRequest {
+  string namespace = 1;
+  string queue = 2;
+  uint32 max_count = 3;
+}
+message DequeueResponse {
+  repeated KokaqMessageResponse messages = 1;
+}
+// Peek messages without locking
+message PeekRequest {
+  string namespace = 1;
+  string queue = 2;
+  uint32 count = 3;
+}
+message PeekResponse {
+  repeated KokaqMessageResponse messages = 1;
+}
+// PeekLock - acquire locks on messages
+message PeekLockRequest {
+  string namespace = 1;
+  string queue = 2;
+  string message_id = 3;
+  uint32 lock_duration = 4; // in seconds
+}
+message LockedMessage {
+  KokaqMessageResponse message = 1;
+  string lock_id = 2;
+  google.protobuf.Timestamp lock_expires_at = 3;
+}
+message PeekLockResponse {
+  repeated LockedMessage locked = 1;
+}
+// Acknowledge message processing
+message AckRequest {
+  string namespace = 1;
+  string queue = 2;
+  string message_id = 3;
+  string lock_id = 4;
+}
+message AckResponse {
+  bool acknowledged = 1;
+  // optional: google.protobuf.Timestamp deleted_at = 2;
+}
+// Negative acknowledgement
+message NackRequest {
+  string namespace = 1;
+  string queue = 2;
+  string message_id = 3;
+  string lock_id = 4;
+  FailureReason failure_reason = 5;
+  bool requeue_immediately = 6;
+}
+message NackResponse {
+  bool dead_lettered = 1;
+  bool requeued = 2;
+}
+// Release lock explicitly
+message ReleaseLockRequest {
+  string namespace = 1;
+  string queue = 2;
+  string message_id = 3;
+  string lock_id = 4;
+  bool make_visible_now = 5;
+}
+message ReleaseLockResponse {
+  bool released = 1;
+  google.protobuf.Timestamp visible_at = 2;
+}
+// Extend lock visibility timeout
+message ExtendVisibilityTimeoutRequest {
+  string namespace = 1;
+  string queue = 2;
+  string message_id = 3;
+  uint32 additional_ms = 4;
+  string lock_id = 5;
+}
+// Refresh (keep-alive) current timeout
+message RefreshVisibilityTimeoutRequest {
+  string namespace = 1;
+  string queue = 2;
+  string message_id = 3;
+  string lock_id = 4;
+}
+// Override timeout
+message SetVisibilityTimeoutRequest {
+  string namespace = 1;
+  string queue = 2;
+  string message_id = 3;
+  uint32 new_timeout_ms = 4;
+  string lock_id = 5;
+}
+message VisibilityTimeoutResponse {
+  google.protobuf.Timestamp lock_expires_at = 1;
+  bool applied = 2;
+}
+message KokaqNewQueueRequest {
+  KokaqQueueRequest request = 1;
+  uint64 shard_id = 2;
+}
+// Data service: queue operations and message handling
+service KokaqDataPlane {
+    rpc New(KokaqNewQueueRequest) returns (KokaqQueueResponse);
+    rpc Get(KokaqQueueRequest) returns (KokaqQueueResponse);
+    rpc GetStats(KokaqQueueRequest) returns (KokaqStatsResponse);
+    rpc Delete(KokaqQueueRequest) returns (StatusResponse);
+    rpc Clear(KokaqQueueRequest) returns (StatusResponse);
+
+    rpc Enqueue(EnqueueRequest) returns (EnqueueResponse);
+    rpc Dequeue(DequeueRequest) returns (DequeueResponse);
+    rpc Peek(PeekRequest) returns (PeekResponse);
+    rpc PeekLock(PeekLockRequest) returns (PeekLockResponse);
+    rpc Ack(AckRequest) returns (AckResponse);
+    rpc Nack(NackRequest) returns (NackResponse);
+    rpc Extend(ExtendVisibilityTimeoutRequest) returns (VisibilityTimeoutResponse);
+    rpc SetVisibilityTimeout(SetVisibilityTimeoutRequest) returns (VisibilityTimeoutResponse);
+    rpc RefreshVisibilityTimeout(RefreshVisibilityTimeoutRequest) returns (VisibilityTimeoutResponse);
+    rpc ReleaseLock(ReleaseLockRequest) returns (ReleaseLockResponse);
+    
+
+    // These should run in a private scope
+    // rpc IsExpired(LockIdRequest) returns (IsExpiredResponse);
+    // rpc GetLockedMessages(KokaqNamespaceRequest) returns (QueueItemsResponse);
+    // rpc MoveToDLQ(MoveToDLQRequest) returns (StatusResponse);
+    // rpc AutoMoveToDLQ(AutoMoveToDLQRequest) returns (StatusResponse);
+    // rpc PeekDLQ(KokaqNamespaceRequest) returns (QueueItemsResponse);
+    // rpc DequeueDLQ(KokaqNamespaceRequest) returns (QueueItemResponse);
+    // rpc MoveFromDLQ(MoveToDLQRequest) returns (StatusResponse);
+    // rpc ClearDLQ(KokaqNamespaceRequest) returns (StatusResponse);
+    // rpc Clear(KokaqNamespaceRequest) returns (StatusResponse);
+    // rpc ListMessages(KokaqNamespaceRequest) returns (QueueItemsResponse);
+    // rpc ListLockedMessages(KokaqNamespaceRequest) returns (QueueItemsResponse);
+    // rpc ListDLQMessages(KokaqNamespaceRequest) returns (QueueItemsResponse);
+}
