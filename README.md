@@ -4,6 +4,10 @@
 
 `protocol` contains the canonical protocol definitions for the kokaq distributed priority queue system. It serves as the single source of truth for how components in the `kokaq` ecosystem communicate — ensuring consistency, versioning, and interoperability across clients, servers, and storage backends.
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/kokaq/protocol.svg)](https://pkg.go.dev/github.com/kokaq/protocol)
+[![Tests](https://github.com/kokaq/protocol/actions/workflows/go.yml/badge.svg)](https://github.com/kokaq/protocol/actions/workflows/go.yml)
+
+
 ## 🧠 Why Protocol Definitions?
 Distributed systems require a clear and consistent language to operate reliably across environments, runtimes, and network boundaries. protocol ensures:
 
