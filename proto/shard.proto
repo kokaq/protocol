@@ -18,7 +18,8 @@ message ShardItem {
 
 message RegisterNodeRequest {
     string grpc_address = 1;
-    repeated ShardItem shard = 2;
+    string internal_address = 2;
+    repeated ShardItem shard = 3;
 }
 
 message RegisterNodeResponse {
@@ -36,9 +37,10 @@ message GetShardRequest {
 
 message GetShardResponse {
     string grpc_address = 1;
-    StatusResponse status = 2;
-    bool is_new = 3;
-    uint64 new_shard_id = 4;
+    string internal_address = 2;
+    StatusResponse status = 3;
+    bool is_new = 4;
+    uint64 new_shard_id = 5;
 }
 
 message ListShardsRequest {

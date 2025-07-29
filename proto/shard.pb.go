@@ -134,11 +134,12 @@ func (x *ShardItem) GetLastCheckin() uint64 {
 }
 
 type RegisterNodeRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GrpcAddress   string                 `protobuf:"bytes,1,opt,name=grpc_address,json=grpcAddress,proto3" json:"grpc_address,omitempty"`
-	Shard         []*ShardItem           `protobuf:"bytes,2,rep,name=shard,proto3" json:"shard,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	GrpcAddress     string                 `protobuf:"bytes,1,opt,name=grpc_address,json=grpcAddress,proto3" json:"grpc_address,omitempty"`
+	InternalAddress string                 `protobuf:"bytes,2,opt,name=internal_address,json=internalAddress,proto3" json:"internal_address,omitempty"`
+	Shard           []*ShardItem           `protobuf:"bytes,3,rep,name=shard,proto3" json:"shard,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *RegisterNodeRequest) Reset() {
@@ -174,6 +175,13 @@ func (*RegisterNodeRequest) Descriptor() ([]byte, []int) {
 func (x *RegisterNodeRequest) GetGrpcAddress() string {
 	if x != nil {
 		return x.GrpcAddress
+	}
+	return ""
+}
+
+func (x *RegisterNodeRequest) GetInternalAddress() string {
+	if x != nil {
+		return x.InternalAddress
 	}
 	return ""
 }
@@ -314,13 +322,14 @@ func (x *GetShardRequest) GetCreateIfNotFound() bool {
 }
 
 type GetShardResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	GrpcAddress   string                 `protobuf:"bytes,1,opt,name=grpc_address,json=grpcAddress,proto3" json:"grpc_address,omitempty"`
-	Status        *StatusResponse        `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
-	IsNew         bool                   `protobuf:"varint,3,opt,name=is_new,json=isNew,proto3" json:"is_new,omitempty"`
-	NewShardId    uint64                 `protobuf:"varint,4,opt,name=new_shard_id,json=newShardId,proto3" json:"new_shard_id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	GrpcAddress     string                 `protobuf:"bytes,1,opt,name=grpc_address,json=grpcAddress,proto3" json:"grpc_address,omitempty"`
+	InternalAddress string                 `protobuf:"bytes,2,opt,name=internal_address,json=internalAddress,proto3" json:"internal_address,omitempty"`
+	Status          *StatusResponse        `protobuf:"bytes,3,opt,name=status,proto3" json:"status,omitempty"`
+	IsNew           bool                   `protobuf:"varint,4,opt,name=is_new,json=isNew,proto3" json:"is_new,omitempty"`
+	NewShardId      uint64                 `protobuf:"varint,5,opt,name=new_shard_id,json=newShardId,proto3" json:"new_shard_id,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *GetShardResponse) Reset() {
@@ -356,6 +365,13 @@ func (*GetShardResponse) Descriptor() ([]byte, []int) {
 func (x *GetShardResponse) GetGrpcAddress() string {
 	if x != nil {
 		return x.GrpcAddress
+	}
+	return ""
+}
+
+func (x *GetShardResponse) GetInternalAddress() string {
+	if x != nil {
+		return x.InternalAddress
 	}
 	return ""
 }
@@ -489,10 +505,11 @@ const file_proto_shard_proto_rawDesc = "" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\x1a9\n" +
 	"\vQueuesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\x04R\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"`\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x8b\x01\n" +
 	"\x13RegisterNodeRequest\x12!\n" +
-	"\fgrpc_address\x18\x01 \x01(\tR\vgrpcAddress\x12&\n" +
-	"\x05shard\x18\x02 \x03(\v2\x10.proto.ShardItemR\x05shard\"a\n" +
+	"\fgrpc_address\x18\x01 \x01(\tR\vgrpcAddress\x12)\n" +
+	"\x10internal_address\x18\x02 \x01(\tR\x0finternalAddress\x12&\n" +
+	"\x05shard\x18\x03 \x03(\v2\x10.proto.ShardItemR\x05shard\"a\n" +
 	"\x14RegisterNodeResponse\x12\x1a\n" +
 	"\baccepted\x18\x01 \x01(\bR\baccepted\x12-\n" +
 	"\x06status\x18\x02 \x01(\v2\x15.proto.StatusResponseR\x06status\"\xb2\x01\n" +
@@ -501,12 +518,13 @@ const file_proto_shard_proto_rawDesc = "" +
 	"\bqueue_id\x18\x02 \x01(\rR\aqueueId\x12\x1c\n" +
 	"\tnamespace\x18\x03 \x01(\tR\tnamespace\x12\x14\n" +
 	"\x05queue\x18\x04 \x01(\tR\x05queue\x12-\n" +
-	"\x13create_if_not_found\x18\x05 \x01(\bR\x10createIfNotFound\"\x9d\x01\n" +
+	"\x13create_if_not_found\x18\x05 \x01(\bR\x10createIfNotFound\"\xc8\x01\n" +
 	"\x10GetShardResponse\x12!\n" +
-	"\fgrpc_address\x18\x01 \x01(\tR\vgrpcAddress\x12-\n" +
-	"\x06status\x18\x02 \x01(\v2\x15.proto.StatusResponseR\x06status\x12\x15\n" +
-	"\x06is_new\x18\x03 \x01(\bR\x05isNew\x12 \n" +
-	"\fnew_shard_id\x18\x04 \x01(\x04R\n" +
+	"\fgrpc_address\x18\x01 \x01(\tR\vgrpcAddress\x12)\n" +
+	"\x10internal_address\x18\x02 \x01(\tR\x0finternalAddress\x12-\n" +
+	"\x06status\x18\x03 \x01(\v2\x15.proto.StatusResponseR\x06status\x12\x15\n" +
+	"\x06is_new\x18\x04 \x01(\bR\x05isNew\x12 \n" +
+	"\fnew_shard_id\x18\x05 \x01(\x04R\n" +
 	"newShardId\"\x13\n" +
 	"\x11ListShardsRequest\"m\n" +
 	"\x12ListShardsResponse\x12(\n" +
